@@ -1,0 +1,296 @@
+{
+    "Customers": [
+        {
+            "id": 0,
+            "name": "OneService_standard_price",
+            "services": [
+                {
+                    "name": "A"
+                }
+            ]
+        },
+        {
+            "id": 1,
+            "name": "TwoServices_standard_price",
+            "services": [
+                {
+                    "name": "A"
+                },
+                {
+                    "name": "B"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "OneService_specific_price",
+            "services": [
+                {
+                    "name": "A",
+                    "price": 0.5
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "TwoServices_specific_prices",
+            "services": [
+                {
+                    "name": "A",
+                    "price": 0.5
+                },
+                {
+                    "name": "C",
+                    "price": 1.5
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "name": "TwoServices_one_specific_one_base_prices",
+            "services": [
+                {
+                    "name": "B"
+                },
+                {
+                    "name": "C",
+                    "price": 1.5
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "name": "OneService_discount_base_price",
+            "services": [
+                {
+                    "name": "A",
+                    "discount": {
+                        "percentage": 30,
+                        "start_date": "2019-01-01",
+                        "end_date": "2019-01-03"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "name": "OneService_discount_specific_price",
+            "services": [
+                {
+                    "name": "C",
+                    "price": 1,
+                    "discount": {
+                        "percentage": 50,
+                        "start_date": "2019-01-01",
+                        "end_date": "2019-01-03"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "name": "TwoServices_onediscount_oneregular_specific_price",
+            "services": [
+                {
+                    "name": "C",
+                    "price": 1,
+                    "discount": {
+                        "percentage": 50,
+                        "start_date": "2019-01-01",
+                        "end_date": "2019-01-03"
+                    }
+                },
+                {
+                    "name": "B",
+                    "price": 0.5
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "name": "TwoServices_onediscount_oneregular_base_price",
+            "services": [
+                {
+                    "name": "C",
+                    "price": 1,
+                    "discount": {
+                        "percentage": 50,
+                        "start_date": "2019-01-01",
+                        "end_date": "2019-01-03"
+                    }
+                },
+                {
+                    "name": "B"
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "name": "TwoServices_twodiscounts",
+            "services": [
+                {
+                    "name": "C",
+                    "price": 1,
+                    "discount": {
+                        "percentage": 50,
+                        "start_date": "2019-01-01",
+                        "end_date": "2019-01-03"
+                    }
+                },
+                {
+                    "name": "B",
+                    "discount": {
+                        "percentage": 10,
+                        "start_date": "2019-01-01",
+                        "end_date": "2019-01-03"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "name": "OneService_signed_up_later_than_startdate_in_query",
+            "services": [
+                {
+                    "name": "A",
+                    "start_date": "2019-01-02"
+                }
+            ],
+            "expectedPrice": 0.6
+        },
+        {
+            "id": 11,
+            "name": "OneService_signed_up_earlier_than_startdate_in_query",
+            "services": [
+                {
+                    "name": "A",
+                    "start_date": "2018-12-29"
+                }
+            ]
+        },
+        {
+            "id": 12,
+            "name": "OneService_signed_up_later_than_enddate_in_query",
+            "services": [
+                {
+                    "name": "A",
+                    "start_date": "2019-12-29"
+                }
+            ]
+        },
+        {
+            "id": 13,
+            "name": "OneService_freedays",
+            "freedays": 4,
+            "services": [
+                {
+                    "name": "A"
+                }
+            ]
+        },
+        {
+            "id": 14,
+            "name": "TwoServices_freedays",
+            "freedays": 4,
+            "services": [
+                {
+                    "name": "A"
+                },
+                {
+                    "name": "C"
+                }
+            ]
+        },
+        {
+            "id": 15,
+            "name": "Oneservice_freedays_with_discount_end_date_later_than_test_end_date",
+            "freedays": 4,
+            "services": [
+                {
+                    "name": "A",
+                    "discount": {
+                        "percentage": 50,
+                        "start_date": "2019-01-01",
+                        "end_date": "2019-09-24"
+                    }
+                }
+            ],
+            "test_start_date": "2019-01-01",
+            "test_end_date": "2019-01-07",
+            "expectedPrice": 1.4
+        },
+        {
+            "id": 16,
+            "name": "Twoservices_freedays_with_discount_weird_dates",
+            "freedays": 4,
+            "services": [
+                {
+                    "name": "A",
+                    "discount": {
+                        "percentage": 50,
+                        "start_date": "2019-01-01",
+                        "end_date": "2019-09-24"
+                    }
+                },
+                {
+                    "name": "C",
+                    "discount": {
+                        "percentage": 50,
+                        "start_date": "2019-01-08"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 17,
+            "name": "Oneservice_end_date_before_start_date",
+            "services": [
+                {
+                    "name": "A"
+                }
+            ]
+        },
+        {
+            "id": 100,
+            "name": "CustomerX",
+            "services": [
+                {
+                    "name": "A",
+                    "start_date": "2019-09-20"
+                },
+                {
+                    "name": "C",
+                    "start_date": "2019-09-20",
+                    "discount": {
+                        "percentage": 20,
+                        "start_date": "2019-09-22",
+                        "end_date": "2019-09-24"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 101,
+            "name": "CustomerY",
+            "freedays": 200,
+            "services": [
+                {
+                    "name": "B",
+                    "start_date": "2018-01-01",
+                    "discount": {
+                        "percentage": 30,
+                        "start_date": "2018-01-01"
+                    }
+                },
+                {
+                    "name": "C",
+                    "start_date": "2018-01-01",
+                    "discount": {
+                        "percentage": 30,
+                        "start_date": "2018-01-01"
+                    }
+                }
+            ]
+        }
+    ]
+}
