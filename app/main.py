@@ -1,7 +1,7 @@
 # main.py
 import datetime
 import json
-from fastapi import FastAPI, Query, status
+from fastapi import FastAPI, Query
 import numpy as np
 
 
@@ -24,7 +24,7 @@ f.close()
 
 
 # Only one endpoint 
-@app.get('/{customerId}')
+@app.get('/{customerId}', status_code=200)
 def get_customer(customerId: int,
                  start_date: str = Query(None, title="Start_date", description="Start date for the customer"),
                  end_date: str = Query(None, title="End_date", description="End date for the customer")):
@@ -40,7 +40,7 @@ def get_customer(customerId: int,
 
         # If either of them isn't provided return a response telling that there are missing values
         if start_date_obj is None or end_date_obj is None:
-            return {"message": "Missing start_date or end_date in query" , "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY}
+            return {"message": "Missing start_date or end_date in query"}
 
         # If the start_date query value is larger than end_date
         # Ex: start_date: 2019-01-09, end_date: 2019-01-08 
@@ -51,7 +51,7 @@ def get_customer(customerId: int,
         total_cost = calculate_total_cost(customer[0], start_date_obj, end_date_obj)
         return round(total_cost, 3)
     else:
-        return {"message": "Found no customer with ID: " + str(customerId), "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY}
+        return {"message": "Found no customer with ID: " + str(customerId)}
 
 
 # Calculates the total amount to charge towards a company
