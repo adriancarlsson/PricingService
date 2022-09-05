@@ -7,11 +7,13 @@ import numpy as np
 
 app = FastAPI()
 
+
 # List of out company provided services. 
 # This information should perhaps be fetched from another db microservice
 company_provided_services = [{"name": "A", "price": 0.2, "workingDays": True},
                              {"name": "B", "price": 0.24, "workingDays": True},
                              {"name": "C", "price": 0.4, "workingDays": False}]
+
 
 # Using a json file as a "fake database".
 # This information should perhaps be fetched from another db microservice
@@ -19,6 +21,7 @@ with open('data.json', "r") as f:
     customerData = json.load(f)['Customers']
 # print(customerData)
 f.close()
+
 
 # Only one endpoint 
 @app.get('/{customerId}')
@@ -28,6 +31,7 @@ def get_customer(customerId: int,
 
     # Assuming the ID of the customer to be unique
     customer = [c for c in customerData if c['id'] == customerId]
+    # print(customer)
 
     if len(customer) > 0:
         # Convert the start_date and end_date from the query to datetime objects
@@ -49,32 +53,32 @@ def get_customer(customerId: int,
     else:
         return {"message": "Found no customer with ID: " + str(customerId), "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY}
 
+
 # Calculates the total amount to charge towards a company
 def calculate_total_cost(customer, start_date_obj: datetime, end_date_obj: datetime):
     total_cost = 0
-    for service in customer['services']:
-        total_cost += calculate_service_specific_cost(service, customer, start_date_obj, end_date_obj)
+    if len(customer['services']) > 0:
+        for service in customer['services']:
+            total_cost += calculate_service_specific_cost(customer, service, start_date_obj, end_date_obj)
     return total_cost
 
 
-def calculate_service_specific_cost(service, customer, start_date_obj: datetime, end_date_obj: datetime):
-    cost = 0
-
+def calculate_service_specific_cost(customer, service, start_date_obj: datetime, end_date_obj: datetime):
     # Get the base values from the global variable company_provided_services
-    # To be used if no specific prices has been set on the services and the base ones should be used
+    # To be used if no specific prices has been set on the services and the base ones should be used, also checks which days to charge for a service
     service_base_values = [s for s in company_provided_services if s['name'] == service['name']]
 
     # If the service is not a service listed in our "provided services" list. Service does not exists return cost = 0.
     if len(service_base_values) <= 0:
         print("The service, " + service['name'] + ", we try to charge for does not exists in our provided services list")
-        return cost
+        return 0
 
     # Check if a start_date is set for the service
     if 'start_date' in service:
         service_start_date = convertToDatetimeObject(service['start_date'])
-        # The service should not be charged between this interval since the service_start_date is after end_date in query
+        # The service should not be charged between the given query interval since the service_start_date is after end_date in query
         if service_start_date > end_date_obj:
-            return cost
+            return 0
         # The service should be charged from the value in service_start_date not from the start_date value in query
         if service_start_date > start_date_obj:
             start_date_obj = service_start_date
@@ -84,22 +88,19 @@ def calculate_service_specific_cost(service, customer, start_date_obj: datetime,
     start_date_obj = apply_freedays(customer, start_date_obj)
     if start_date_obj > end_date_obj:
         print("After applying freedays the start_date is 'larger' than the end_date, nothing to charge")
-        return cost
+        return 0
 
-    # Check for how many days we should charge for the service
+    # Check how many days we should charge the service for
     days_to_charge = get_amount_of_days_to_charge(service_base_values, start_date_obj, end_date_obj)
 
-    # Check if there are any discount days for the service and if so how much and how many
+    # Check if there are any discount days for the service and if so how much is it and how many days
     discount_days, discount = get_amount_of_discount_days_and_percentage(service, service_base_values, start_date_obj, end_date_obj)
 
     # Check if the company has a specific price, that differs from the base price, for the service.
-    price_per_day = check_if_specific_price(service, service_base_values)
-
-    # Number of full price days to pay
-    full_price_days = days_to_charge - discount_days
+    price_per_day = get_price_per_day(service, service_base_values)
 
     # Amount to pay for full price days
-    full_price_days_charge = full_price_days * price_per_day
+    full_price_days_charge = (days_to_charge - discount_days) * price_per_day
 
     # Amount to pay for discount price days
     discount_price_days_charge = discount_days * (discount * price_per_day)
@@ -125,21 +126,22 @@ def get_amount_of_discount_days_and_percentage(service, service_base_values, sta
         discount_end_date_obj = end_date_obj
     else:
         discount_end_date_obj = convertToDatetimeObject(service['discount']['end_date'])
-
-    if discount_end_date_obj > end_date_obj:
-         discount_end_date_obj = end_date_obj
+        if discount_end_date_obj > end_date_obj:
+            discount_end_date_obj = end_date_obj
 
     value = get_amount_of_days_to_charge(service_base_values, discount_start_date_obj, discount_end_date_obj)
     return value, (1 - service['discount']['percentage'] / 100)
 
+
 def get_amount_of_days_to_charge(service_base_values, start_date_obj: datetime, end_date_obj: datetime):
-    # Check if we should only charge this service for the amount of working days(Mon-Fri) else charge for full week(Mon-Sun)
+    # Check if we should only charge this service for the amount of working days(Mon-Fri), else charge for full week(Mon-Sun)
     if service_base_values[0]['workingDays']:
         amount_of_days_to_charge = calculate_amount_of_weekdays(start_date_obj, end_date_obj)
     else:
         # Add one day to include the "end_date"
         amount_of_days_to_charge = (end_date_obj - start_date_obj).days + 1
     return amount_of_days_to_charge
+
 
 def calculate_amount_of_weekdays(start_date_obj: datetime, end_date_obj: datetime):
     busydays = np.busday_count(start_date_obj.strftime('%Y-%m-%d'), end_date_obj.strftime('%Y-%m-%d'))
@@ -150,14 +152,16 @@ def calculate_amount_of_weekdays(start_date_obj: datetime, end_date_obj: datetim
     
     return busydays
 
+
 # Apply potential freedays to the start_date_obj
 def apply_freedays(customer, start_date_obj):
     if 'freedays' in customer:
         start_date_obj = start_date_obj + datetime.timedelta(days=customer['freedays'])
     return start_date_obj
 
-# Check if there is a specific price for the service
-def check_if_specific_price(service, service_base_values):
+
+# Get the price the customer should pay for this service per day
+def get_price_per_day(service, service_base_values):
     if "price" in service:
         return service['price']
     else:

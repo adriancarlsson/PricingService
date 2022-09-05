@@ -24,5 +24,6 @@ def test_get_customer():
         response = client.get(request)
 
         print("Got price: " + str(response.json()))
+        
         assert response.json() == customer['expectedPrice']
         assert response.status_code == 200
