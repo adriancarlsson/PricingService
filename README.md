@@ -1,5 +1,7 @@
 # PricingService
-This PricingService takes a customerId, start_date and end_date as input to calculate how much to charge a specific customer for. Currently using a json file containing customers as a "fake database". See `app/data.json`.
+PricingService is a Web API created with FastAPI.
+It takes a customerId, start_date and end_date as input to calculate how much to charge a specific customer for. 
+Currently it is using a json file containing customers as a "fake database". See `app/data.json`.
 
 ## How to use it
 localhost:8000/2?start_date=2019-01-01&end_date=2019-01-14
