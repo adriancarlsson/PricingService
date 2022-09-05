@@ -8,20 +8,14 @@ with open('test_data.json', "r") as f:
     customerData = json.load(f)['Customers']
 f.close()
 
-def test_get_customer():
+def test_get_charge_price():
     for customer in customerData:
         print("\nRunning test: " + customer['name'])
         print("Testing customerId: " + str(customer['id']) + " and is expecting a total price of: " + str(customer['expectedPrice']))
 
-        request = "/" + str(customer['id'])
-        if "test_start_date" in customer and "test_end_date" in customer:
-            request += "?start_date=" + customer['test_start_date'] + "&end_date=" + customer['test_end_date']
-        elif "test_start_date" in customer:
-            request += "?start_date=" + customer['test_start_date']
-        else:
-             request += "?end_date=" + customer['test_end_date']
-
-        response = client.get(request)
+        response = client.post("/", headers={"accept": "application/json", "Content-Type": "application/json"}, \
+            json={"customerId": customer['id'], "start_date": customer['test_start_date'], "end_date": customer['test_end_date']},
+        )
 
         print("Got price: " + str(response.json()))
         

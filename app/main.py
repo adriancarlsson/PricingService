@@ -1,11 +1,17 @@
 # main.py
 import datetime
 import json
-from fastapi import FastAPI, Query
+from pydantic import BaseModel
+from fastapi import FastAPI
 import numpy as np
 
 
 app = FastAPI()
+
+class CalculateChargePrice(BaseModel):
+    customerId: int
+    start_date: str
+    end_date: str
 
 
 # List of out company provided services. 
@@ -23,20 +29,16 @@ with open('data.json', "r") as f:
 f.close()
 
 
-# Only one endpoint 
-@app.get('/{customerId}', status_code=200)
-def get_customer(customerId: int,
-                 start_date: str = Query(None, title="Start_date", description="Start date for the customer"),
-                 end_date: str = Query(None, title="End_date", description="End date for the customer")):
-
+@app.post('/')
+def get_charge_price(calculateChargePrice: CalculateChargePrice):
     # Assuming the ID of the customer to be unique
-    customer = [c for c in customerData if c['id'] == customerId]
+    customer = [c for c in customerData if c['id'] == calculateChargePrice.customerId]
     # print(customer)
 
     if len(customer) > 0:
         # Convert the start_date and end_date from the query to datetime objects
-        start_date_obj = convertToDatetimeObject(start_date)
-        end_date_obj = convertToDatetimeObject(end_date)
+        start_date_obj = convertToDatetimeObject(calculateChargePrice.start_date)
+        end_date_obj = convertToDatetimeObject(calculateChargePrice.end_date)
 
         # If either of them isn't provided return a response telling that there are missing values
         if start_date_obj is None or end_date_obj is None:
@@ -51,7 +53,7 @@ def get_customer(customerId: int,
         total_cost = calculate_total_cost(customer[0], start_date_obj, end_date_obj)
         return round(total_cost, 3)
     else:
-        return {"message": "Found no customer with ID: " + str(customerId)}
+        return {"message": "Found no customer with ID: " + str(calculateChargePrice.customerId)}
 
 
 # Calculates the total amount to charge towards a company
