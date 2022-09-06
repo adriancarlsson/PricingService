@@ -18,6 +18,8 @@ def test_get_charge_price():
         )
 
         print("Got price: " + str(response.json()))
+
+        assert response.json()['charge_price'] == customer['expectedPrice']
         
-        assert response.json() == customer['expectedPrice']
-        assert response.status_code == 200
+        if 'expectedMessage' in customer:
+            assert response.json()['message'] == customer['expectedMessage']

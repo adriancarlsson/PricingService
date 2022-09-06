@@ -214,7 +214,8 @@
             ],
             "test_start_date": "2019-01-01",
             "test_end_date": "2019-01-07",
-            "expectedPrice": 0
+            "expectedPrice": 0,
+            "expectedMessage": "The service, A, we try to charge for should not be charged since the service_start_date: 2019-12-29 is after the end_date: 2019-01-07 00:00:00"
         },
         {
             "id": 13,
@@ -298,7 +299,35 @@
             ],
             "test_start_date": "2019-01-08",
             "test_end_date": "2019-01-07",
-            "expectedPrice": 0
+            "expectedPrice": 0,
+            "expectedMessage": "The sent in start_date is after the end_date: start_date: 2019-01-08 00:00:00 end_date: 2019-01-07 00:00:00"
+        },
+        {
+            "id": 18,
+            "name": "Service_does_not_exists_in_our_provided_service_list",
+            "services": [
+                {
+                    "name": "BadService"
+                }
+            ],
+            "test_start_date": "2019-01-01",
+            "test_end_date": "2019-01-07",
+            "expectedPrice": 0,
+            "expectedMessage": "The service, BadService, we try to charge for does not exists in our provided services list"
+        },
+        {
+            "id": 19,
+            "name": "After_freedays_start_date_is_larger_than_end_date",
+            "freedays": 200,
+            "services": [
+                {
+                    "name": "A"
+                }
+            ],
+            "test_start_date": "2019-01-01",
+            "test_end_date": "2019-01-07",
+            "expectedPrice": 0,
+            "expectedMessage": "After applying freedays the start_date is 'larger' than the end_date, nothing to charge"
         },
         {
             "id": 100,
