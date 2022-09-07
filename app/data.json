@@ -270,6 +270,37 @@
             ]
         },
         {
+            "id": 20,
+            "name": "Two_services_first_service_not_in_provided_services_list",
+            "services": [
+                {
+                    "name": "BadService"
+                },
+                {
+                    "name": "A",
+                    "price": 0.5
+                }
+            ]
+        },
+        {
+            "id": 21,
+            "name": "Bad_start_date_string",
+            "services": [
+                {
+                    "name": "A"
+                }
+            ]
+        },
+        {
+            "id": 22,
+            "name": "Bad_end_date_string",
+            "services": [
+                {
+                    "name": "A"
+                }
+            ]
+        },
+        {
             "id": 100,
             "name": "CustomerX",
             "services": [

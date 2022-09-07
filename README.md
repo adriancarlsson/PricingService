@@ -4,9 +4,9 @@ It takes a customerId, start_date and end_date as input to calculate how much to
 Currently it is using a json file containing customers as a "fake database". See `app/data.json`.
 
 ## How to use it
-localhost:8000/2?start_date=2019-01-01&end_date=2019-01-14
+After starting the service(Described below) access the docs and do requests through it: `http://localhost:8000/docs`
 
-Calculating how much a Customer with `customerId` 2 should be charged between `start_date` and `end_date`
+It will calculate how much a customer with `customerId` should be charged between `start_date` and `end_date`
 
 # Build docker image and deploy
 Be in parent folder of the repo:

@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from fastapi.testclient import TestClient
 from .main import app
 import json
@@ -17,9 +18,15 @@ def test_get_charge_price():
             json={"customerId": customer['id'], "start_date": customer['test_start_date'], "end_date": customer['test_end_date']},
         )
 
-        print("Got price: " + str(response.json()))
+        print("Got response: " + str(response.json()))
 
-        assert response.json()['charge_price'] == customer['expectedPrice']
+        if 'bad_response_code' in customer:
+            assert response.status_code == customer['bad_response_code']
+            assert response.json()['detail'] == customer['expectedDetail']
+        else:
+            assert response.status_code == HTTPStatus.OK
+            assert response.json()['charge_price'] == customer['expectedPrice']
         
-        if 'expectedMessage' in customer:
-            assert response.json()['message'] == customer['expectedMessage']
+            if 'expectedMessage' in customer:
+                assert response.json()['info'] == customer['expectedInfo']
+        

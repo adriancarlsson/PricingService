@@ -215,7 +215,7 @@
             "test_start_date": "2019-01-01",
             "test_end_date": "2019-01-07",
             "expectedPrice": 0,
-            "expectedMessage": "The service, A, we try to charge for should not be charged since the service_start_date: 2019-12-29 is after the end_date: 2019-01-07 00:00:00"
+            "expectedInfo": ["The service, A, we try to charge for should not be charged since the service_start_date: 2019-12-29 is after the end_date: 2019-01-07 00:00:00"]
         },
         {
             "id": 13,
@@ -300,7 +300,7 @@
             "test_start_date": "2019-01-08",
             "test_end_date": "2019-01-07",
             "expectedPrice": 0,
-            "expectedMessage": "The sent in start_date is after the end_date: start_date: 2019-01-08 00:00:00 end_date: 2019-01-07 00:00:00"
+            "expectedInfo": ["The sent in start_date is after the end_date: start_date: 2019-01-08 00:00:00 end_date: 2019-01-07 00:00:00"]
         },
         {
             "id": 18,
@@ -313,7 +313,7 @@
             "test_start_date": "2019-01-01",
             "test_end_date": "2019-01-07",
             "expectedPrice": 0,
-            "expectedMessage": "The service, BadService, we try to charge for does not exists in our provided services list"
+            "expectedInfo": ["The service, BadService, we try to charge for does not exists in our provided services list"]
         },
         {
             "id": 19,
@@ -327,7 +327,67 @@
             "test_start_date": "2019-01-01",
             "test_end_date": "2019-01-07",
             "expectedPrice": 0,
-            "expectedMessage": "After applying freedays the start_date is 'larger' than the end_date, nothing to charge"
+            "expectedInfo": ["After applying freedays the start_date is 'larger' than the end_date, nothing to charge"]
+        },
+        {
+            "id": 20,
+            "name": "Two_services_first_service_not_in_provided_services_list",
+            "services": [
+                {
+                    "name": "BadService"
+                },
+                {
+                    "name": "A",
+                    "price": 0.5
+                }
+            ],
+            "test_start_date": "2019-01-01",
+            "test_end_date": "2019-01-07",
+            "expectedPrice": 2.5,
+            "expectedInfo": ["The service, BadService, we try to charge for does not exists in our provided services list"]
+        },
+        {
+            "id": 21,
+            "name": "Bad_start_date_string",
+            "services": [
+                {
+                    "name": "A"
+                }
+            ],
+            "test_start_date": "asd",
+            "test_end_date": "2019-01-07",
+            "expectedPrice": 0,
+            "bad_response_code": 400,
+            "expectedDetail": "Either the given start_date asd or end_date 2019-01-07 is not on the expected format: YYYY-MM-DD"
+        },
+        {
+            "id": 22,
+            "name": "Bad_end_date_string",
+            "services": [
+                {
+                    "name": "A"
+                }
+            ],
+            "test_start_date": "2019-01-01",
+            "test_end_date": "bad",
+            "expectedPrice": 0,
+            "bad_response_code": 400,
+            "expectedDetail": "Either the given start_date 2019-01-01 or end_date bad is not on the expected format: YYYY-MM-DD"
+        },
+        {
+            "id": 1111,
+            "name": "CustomerID_does_not_exist",
+            "services": [
+                {
+                    "name": "A",
+                    "price": 0.5
+                }
+            ],
+            "test_start_date": "2019-01-01",
+            "test_end_date": "2019-01-07",
+            "expectedPrice": 0,
+            "bad_response_code": 404,
+            "expectedDetail": "Found no customer with ID: 1111"
         },
         {
             "id": 100,

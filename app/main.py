@@ -2,9 +2,9 @@
 import datetime
 import json
 from pydantic import BaseModel
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import numpy as np
-from typing import Optional
+from typing import Optional, List
 
 
 app = FastAPI()
@@ -17,7 +17,7 @@ class CalculateChargePrice(BaseModel):
 
 class Response(BaseModel):
     charge_price: float
-    message: Optional[str]
+    info: Optional[List[str]]
 
 
 # List of out company provided services. 
@@ -31,7 +31,6 @@ company_provided_services = [{"name": "A", "price": 0.2, "workingDays": True},
 # This information should perhaps be fetched from another db microservice
 with open('data.json', "r") as f:
     customerData = json.load(f)['Customers']
-# print(customerData)
 f.close()
 
 
@@ -45,30 +44,30 @@ def get_charge_price(calculateChargePrice: CalculateChargePrice):
         start_date_obj = convertToDatetimeObject(calculateChargePrice.start_date)
         end_date_obj = convertToDatetimeObject(calculateChargePrice.end_date)
 
+        if start_date_obj == None or end_date_obj == None:
+            raise HTTPException(status_code=400, detail="Either the given start_date " + calculateChargePrice.start_date + " or end_date " + calculateChargePrice.end_date + " is not on the expected format: YYYY-MM-DD")
+
         # If the start_date query value is larger than end_date
         # Ex: start_date: 2019-01-09, end_date: 2019-01-08 
         if start_date_obj > end_date_obj:
-            return Response(charge_price=0, message="The sent in start_date is after the end_date: start_date: " + str(start_date_obj) + " end_date: " + str(end_date_obj))
+            return Response(charge_price=0, info=["The sent in start_date is after the end_date: start_date: " + str(start_date_obj) + " end_date: " + str(end_date_obj)])
 
-        total_cost, message = calculate_total_cost(customer[0], start_date_obj, end_date_obj)
-        if len(message) > 0:
-            return Response(charge_price=0, message=message)
-        return Response(charge_price=round(total_cost, 3))
+        total_cost, info = calculate_total_cost(customer[0], start_date_obj, end_date_obj)
+        return Response(charge_price=round(total_cost, 3), info=info)
     else:
-        return Response(charge_price=0, message="Found no customer with ID: " + str(calculateChargePrice.customerId))
+        raise HTTPException(status_code=404, detail="Found no customer with ID: " + str(calculateChargePrice.customerId))
 
 
 # Calculates the total amount to charge towards a company
 def calculate_total_cost(customer, start_date_obj: datetime, end_date_obj: datetime):
     total_cost = 0
+    info = []
     if len(customer['services']) > 0:
         for service in customer['services']:
             cost, message = calculate_service_specific_cost(customer, service, start_date_obj, end_date_obj)
-            if len(message) > 0:
-                return 0, message
-            else:
-                total_cost += cost
-    return total_cost, ""
+            info.append(message)
+            total_cost += cost
+    return total_cost, info
 
 
 def calculate_service_specific_cost(customer, service, start_date_obj: datetime, end_date_obj: datetime):
@@ -85,7 +84,7 @@ def calculate_service_specific_cost(customer, service, start_date_obj: datetime,
         service_start_date = convertToDatetimeObject(service['start_date'])
         # The service should not be charged between the given interval since the service_start_date is after end_date in query
         if service_start_date > end_date_obj:
-            return 0, "The service, " + service['name'] + ", we try to charge for should not be charged since the service_start_date: " + str(service['start_date']) + " is after the end_date: " + str(end_date_obj)
+            return 0, "The service, " + service['name'] + ", we try to charge for should not be charged since the service_start_date: " + str(service['start_date']) + " is after the given end_date: " + str(end_date_obj)
         # The service should be charged from the value in service_start_date not from the start_date value in query
         if service_start_date > start_date_obj:
             start_date_obj = service_start_date
@@ -94,7 +93,7 @@ def calculate_service_specific_cost(customer, service, start_date_obj: datetime,
     # Apply potential freedays to the start_date_obj
     start_date_obj = apply_freedays(customer, start_date_obj)
     if start_date_obj > end_date_obj:
-        return 0, "After applying freedays the start_date is 'larger' than the end_date, nothing to charge"
+        return 0, "After applying freedays to service, " + service['name'] + ", the start_date is 'larger' than the end_date, nothing to charge"
 
     # Check how many days we should charge the service for
     days_to_charge = get_amount_of_days_to_charge(service_base_values, start_date_obj, end_date_obj)
@@ -111,7 +110,7 @@ def calculate_service_specific_cost(customer, service, start_date_obj: datetime,
     # Amount to pay for discount price days
     discount_price_days_charge = discount_days * (discount * price_per_day)
 
-    return full_price_days_charge + discount_price_days_charge, ""
+    return full_price_days_charge + discount_price_days_charge, "Should charge customer " + str(customer['id']) + " a total of " + str(round((full_price_days_charge + discount_price_days_charge), 3)) + " for service " + service['name']
 
 
 def get_amount_of_discount_days_and_percentage(service, service_base_values, start_date_obj, end_date_obj):
@@ -176,5 +175,8 @@ def get_price_per_day(service, service_base_values):
 # Convert a string to a datetime object
 def convertToDatetimeObject(date):
     if date is not None:
-        date = datetime.datetime.strptime(date, "%Y-%m-%d")
-    return date
+        try:
+            date = datetime.datetime.strptime(date, "%Y-%m-%d")
+            return date
+        except:
+            return None
